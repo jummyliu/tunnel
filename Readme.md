@@ -41,12 +41,12 @@ Params:
 
 ```shell
 $ tunnel -tcp 3306
-procy (tcp) 0.0.0.0:3306 => localhost:3306
+proxy (tcp) 0.0.0.0:3306 => localhost:3306
 
 $ tunnel -udp 8080
-procy (udp) 0.0.0.0:8080 => localhost:8080
+proxy (udp) 0.0.0.0:8080 => localhost:8080
 
 $ tunnel -a 443
-procy (udp) 0.0.0.0:443 => localhost:443
-procy (tcp) 0.0.0.0:443 => localhost:443
+proxy (udp) 0.0.0.0:443 => localhost:443
+proxy (tcp) 0.0.0.0:443 => localhost:443
 ```
