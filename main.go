@@ -9,22 +9,24 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+
+	"github.com/jummyliu/tunnel/flagtype"
 )
 
 var (
-	tcpTunnel FlagArr
-	udpTunnel FlagArr
-	allTunnel FlagArr
+	tcpTunnel flagtype.FlagArr
+	udpTunnel flagtype.FlagArr
+	allTunnel flagtype.FlagArr
 	h         bool
 
-	tunnels []Tunnel
+	tunnels []*Tunnel
 )
 
 var usageStr = `
+Easy to create (tcp | udp) tunnel.
 Usage: 
 	tunnel [-h]
 	tunnel [-t|-tcp <tunnelinfo>]... [-u|-udp <tunnelinfo>]... [-a|-all <tunnelinfo>]...
-	tunnel 
 
 Params:
 	-t | -tcp <tunnelinfo>
@@ -44,6 +46,7 @@ Params:
 		- default sip is <0.0.0.0>
 		- default dip is <localhost>
 `
+
 func usage() {
 	fmt.Println(usageStr)
 }
@@ -81,7 +84,7 @@ func main() {
 	var wg sync.WaitGroup
 	for _, tunnel := range tunnels {
 		wg.Add(1)
-		go func(tunnel Tunnel) {
+		go func(tunnel *Tunnel) {
 			tunnel.Build()
 			wg.Wait()
 		}(tunnel)
@@ -89,8 +92,19 @@ func main() {
 	wg.Wait()
 }
 
-func parseTunnel(arr []string, t TunnelType) []Tunnel {
-	tunnels := make([]Tunnel, 0)
+const (
+	defaultSip = "0.0.0.0"
+	defaultDip = "localhost"
+)
+
+// error
+var (
+	ErrPortParseFailure = errors.New("port parse failure")
+	ErrIPParseFailure   = errors.New("ip parse failure")
+)
+
+func parseTunnel(arr []string, t TunnelType) []*Tunnel {
+	tunnels := make([]*Tunnel, 0)
 	for _, tunnelStr := range arr {
 		tunnelSplitArr := strings.Split(tunnelStr, "=")
 
@@ -103,7 +117,7 @@ func parseTunnel(arr []string, t TunnelType) []Tunnel {
 				flag.Usage()
 				os.Exit(-1)
 			}
-			tunnels = append(tunnels, Tunnel{
+			tunnels = append(tunnels, &Tunnel{
 				Sip:   defaultSip,
 				Sport: port,
 				Dip:   defaultDip,
@@ -127,7 +141,7 @@ func parseTunnel(arr []string, t TunnelType) []Tunnel {
 				flag.Usage()
 				os.Exit(-1)
 			}
-			tunnels = append(tunnels, Tunnel{
+			tunnels = append(tunnels, &Tunnel{
 				Sip:   sip,
 				Sport: sport,
 				Dip:   dip,
@@ -139,18 +153,8 @@ func parseTunnel(arr []string, t TunnelType) []Tunnel {
 	return tunnels
 }
 
-const (
-	defaultSip = "0.0.0.0"
-	defaultDip = "localhost"
-)
 
-// error
-var (
-	ErrPortParseFailure = errors.New("port parse failure")
-	ErrIPParseFailure   = errors.New("ip parse failure")
-)
-
-// parseIP parse
+// parseIP
 // 		ip:port
 // 		port
 func parseIP(ipstr string, defaultIP string) (ip string, port int, err error) {

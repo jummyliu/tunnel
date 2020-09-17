@@ -47,7 +47,7 @@ func (t *Tunnel) Build() {
 			defer wg.Done()
 			sAddr := fmt.Sprintf("%s:%d", t.Sip, t.Sport)
 			dAddr := fmt.Sprintf("%s:%d", t.Dip, t.Dport)
-	
+
 			switch network {
 			case "tcp":
 				ln, err := net.Listen(network, sAddr)
@@ -115,7 +115,7 @@ func (t *Tunnel) Build() {
 
 func relay(left, right net.Conn) (int64, int64, error) {
 	type res struct {
-		N int64
+		N   int64
 		Err error
 	}
 	ch := make(chan res)
@@ -125,7 +125,7 @@ func relay(left, right net.Conn) (int64, int64, error) {
 		left.SetDeadline(time.Now())
 		ch <- res{n, err}
 	}()
-	
+
 	n, err := io.Copy(left, right)
 	right.SetDeadline(time.Now())
 	left.SetDeadline(time.Now())
